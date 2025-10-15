@@ -31,6 +31,7 @@ const SideNav: React.FC<SideNavProps> = ({ activePage }) => {
     { icon: 'dashboard', label: 'Home', path: '/dashboard' },
     { icon: 'groups', label: 'Clientes', path: '/clients' },
     { icon: 'rocket_launch', label: 'Oportunidades', path: '/opportunities' },
+    { icon: 'handshake', label: 'Parceiros', path: '/partners' },
     { icon: 'receipt_long', label: 'Transações', path: '/transactions' },
     { icon: 'task_alt', label: 'Tarefas', path: '/tasks' },
     { icon: 'analytics', label: 'Relatórios', path: '/reports' },

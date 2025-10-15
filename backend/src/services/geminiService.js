@@ -1,13 +1,13 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+const apiKey = process.env.GEMINI_API_KEY;
 if (!apiKey) {
-    throw new Error("VITE_GEMINI_API_KEY is not set in .env.local");
+    throw new Error("GEMINI_API_KEY is not set in .env");
 }
 
 const genAI = new GoogleGenerativeAI(apiKey);
 
-export const searchWithGemini = async (query: string, context: any) => {
+const searchWithGemini = async (query, context) => {
     const model = genAI.getGenerativeModel({ model: "gemini-pro"});
 
     const prompt = `
@@ -39,3 +39,5 @@ export const searchWithGemini = async (query: string, context: any) => {
         return { clients: [], opportunities: [], tasks: [] };
     }
 };
+
+module.exports = { searchWithGemini };

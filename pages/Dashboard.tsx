@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line } from 'recharts';
 import Card from '../components/Card';
 import NewOpportunityForm from '../components/forms/NewOpportunityForm';
-import { Opportunity } from '../types';
-import { MOCK_OPPORTUNITIES } from '../constants';
+import { Opportunity, ActivityType } from '../types';
+import { MOCK_OPPORTUNITIES, MOCK_ACTIVITIES } from '../constants';
 
 interface KpiCardProps {
   title: string;
@@ -60,6 +60,19 @@ const Dashboard: React.FC<{ showSnackbar: (msg: string, type?:'success'|'error')
     showSnackbar('Oportunidade adicionada com sucesso!');
   };
 
+  const advisorRanking = useMemo(() => {
+    const activitiesCount = MOCK_ACTIVITIES.reduce((acc, activity) => {
+      if (activity.type === ActivityType.REUNIAO || activity.type === ActivityType.LIGACAO) {
+        acc[activity.assessor] = (acc[activity.assessor] || 0) + 1;
+      }
+      return acc;
+    }, {} as { [key: string]: number });
+
+    return Object.entries(activitiesCount)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 3); // Top 3
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -86,37 +99,53 @@ const Dashboard: React.FC<{ showSnackbar: (msg: string, type?:'success'|'error')
           </ResponsiveContainer>
         </Card>
 
-        <Card>
-          <h3 className="font-semibold text-gray-800 mb-4">Alertas e Ações Rápidas</h3>
-          <div className="space-y-3">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start">
-              <span className="material-symbols-outlined text-yellow-600 mr-3 mt-1">error</span>
-              <div>
-                <p className="font-semibold text-sm text-yellow-800">KYC Atrasado</p>
-                <p className="text-xs text-yellow-700">Cliente João da Silva há 17 dias.</p>
-                <Link to="/clients" className="text-xs font-bold text-yellow-800 hover:underline mt-1">Ver Cliente</Link>
+        <div className="space-y-6">
+          <Card>
+            <h3 className="font-semibold text-gray-800 mb-4">Ranking de Assessores (Atividades)</h3>
+            <ul className="space-y-3">
+              {advisorRanking.map(([name, count], index) => (
+                <li key={name} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <span className={`font-bold text-lg ${index === 0 ? 'text-yellow-500' : index === 1 ? 'text-gray-400' : 'text-orange-400'}`}>{index + 1}º</span>
+                    <span className="ml-3 font-medium text-gray-700">{name}</span>
+                  </div>
+                  <span className="font-bold text-gray-800">{count}</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+          <Card>
+            <h3 className="font-semibold text-gray-800 mb-4">Alertas e Ações Rápidas</h3>
+            <div className="space-y-3">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start">
+                <span className="material-symbols-outlined text-yellow-600 mr-3 mt-1">error</span>
+                <div>
+                  <p className="font-semibold text-sm text-yellow-800">KYC Atrasado</p>
+                  <p className="text-xs text-yellow-700">Cliente João da Silva há 17 dias.</p>
+                  <Link to="/clients" className="text-xs font-bold text-yellow-800 hover:underline mt-1">Ver Cliente</Link>
+                </div>
+              </div>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start">
+                <span className="material-symbols-outlined text-red-600 mr-3 mt-1">dangerous</span>
+                <div>
+                  <p className="font-semibold text-sm text-red-800">Aprovação Necessária</p>
+                  <p className="text-xs text-red-700">Transação de R$ 75.000,00 para Tech Solutions S.A.</p>
+                  <Link to="/compliance" className="text-xs font-bold text-red-800 hover:underline mt-1">Aprovar/Rejeitar</Link>
+                </div>
+              </div>
+               <div className="mt-4 pt-4 border-t space-y-2">
+                   <button onClick={() => setIsNewOpportunityModalOpen(true)} className="w-full flex items-center justify-center py-2 px-4 bg-[#1E2A38] text-white rounded-md font-semibold text-sm hover:bg-opacity-90 transition-all">
+                       <span className="material-symbols-outlined mr-2 text-base">add_circle</span>
+                       Nova Oportunidade
+                   </button>
+                   <button onClick={() => showSnackbar('Gerando relatório...')} className="w-full flex items-center justify-center py-2 px-4 bg-gray-200 text-gray-800 rounded-md font-semibold text-sm hover:bg-gray-300 transition-all">
+                       <span className="material-symbols-outlined mr-2 text-base">summarize</span>
+                       Gerar Relatório Rápido
+                   </button>
               </div>
             </div>
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start">
-              <span className="material-symbols-outlined text-red-600 mr-3 mt-1">gavel</span>
-              <div>
-                <p className="font-semibold text-sm text-red-800">Aprovação Necessária</p>
-                <p className="text-xs text-red-700">Transação de R$ 75.000,00 para Tech Solutions S.A.</p>
-                <Link to="/compliance" className="text-xs font-bold text-red-800 hover:underline mt-1">Aprovar/Rejeitar</Link>
-              </div>
-            </div>
-             <div className="mt-4 pt-4 border-t space-y-2">
-                 <button onClick={() => setIsNewOpportunityModalOpen(true)} className="w-full flex items-center justify-center py-2 px-4 bg-[#1E2A38] text-white rounded-md font-semibold text-sm hover:bg-opacity-90 transition-all">
-                     <span className="material-symbols-outlined mr-2 text-base">add_circle</span>
-                     Nova Oportunidade
-                 </button>
-                 <button onClick={() => showSnackbar('Gerando relatório...')} className="w-full flex items-center justify-center py-2 px-4 bg-gray-200 text-gray-800 rounded-md font-semibold text-sm hover:bg-gray-300 transition-all">
-                     <span className="material-symbols-outlined mr-2 text-base">summarize</span>
-                     Gerar Relatório Rápido
-                 </button>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </div>
       </div>
       <NewOpportunityForm isOpen={isNewOpportunityModalOpen} onClose={() => setIsNewOpportunityModalOpen(false)} onAddOpportunity={handleAddOpportunity} />
     </div>

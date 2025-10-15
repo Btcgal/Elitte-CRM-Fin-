@@ -13,11 +13,25 @@ export enum ComplianceStatus {
 }
 
 export enum OpportunityStage {
-  PROSPECT = 'Prospect',
-  QUALIFICACAO = 'Qualificação',
-  NEGOCIACAO = 'Negociação',
-  FECHADO = 'Fechado',
-  PERDIDO = 'Perdido',
+  PESQUISA = 'Pesquisa',
+  PRIMEIRA_REUNIAO = 'Primeira Reunião',
+  APRESENTACAO_PORTFOLIO = 'Apresentação de Portfólio',
+  ONBOARDING = 'Onboarding',
+  ALOCACAO = 'Alocação',
+  FOLLOW_UP = 'Follow up',
+  GANHO = 'Ganho',
+  PERDA = 'Perda',
+}
+
+export enum ProductType {
+  FUNDO_INVESTIMENTO = 'Fundo de Investimento',
+  ACOES = 'Ações',
+  RENDA_FIXA = 'Renda Fixa',
+  FII = "FII's",
+  INTERNACIONAL = 'Internacional',
+  PREVIDENCIA = 'Previdência',
+  CAMBIO = 'Câmbio',
+  OUTRO = 'Outro',
 }
 
 export enum TransactionType {
@@ -28,40 +42,190 @@ export enum TransactionType {
 }
 
 export enum TransactionStatus {
-  CONCLUIDA = 'Concluída',
+  CONCLUIDA = 'Conclucluída',
   PENDENTE = 'Pendente',
   CANCELADA = 'Cancelada',
   REQUER_APROVACAO = 'Requer Aprovação',
 }
 
-export enum TaskPriority {
+export enum ActivityType {
+  LIGACAO = 'Ligação',
+  REUNIAO = 'Reunião',
+  EMAIL = 'E-mail',
+  OPERACIONAL = 'Operacional',
+  OUTRO = 'Outro',
+}
+
+export enum ActivityPriority {
   ALTA = 'Alta',
   MEDIA = 'Média',
   BAIXA = 'Baixa',
 }
 
-export enum TaskStatus {
+export enum ActivityStatus {
   A_FAZER = 'A Fazer',
   EM_ANDAMENTO = 'Em Andamento',
   CONCLUIDA = 'Concluída',
 }
 
-export interface Client {
-  id: string;
+export interface Address {
+  street: string;
+  number: string;
+  complement?: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  lat?: number;
+  lng?: number;
+}
+
+export interface FamilyMember {
   name: string;
-  type: 'PF' | 'PJ';
-  document: string;
+  relationship: string;
+  birthDate: string;
+}
+
+export interface SocialMedia {
+  platform: 'LinkedIn' | 'Instagram' | 'Facebook' | 'Twitter' | 'Other';
+  url: string;
+}
+
+export interface Interaction {
+  date: string;
+  type: 'Meeting' | 'Call' | 'Email' | 'Note';
+  summary: string;
+  nextSteps?: string;
+}
+
+export interface FinancialProfile {
+  investorProfile: RiskProfile;
+  assetPreferences: string[];
+  financialNeeds: string[];
+  meetingAgendaSuggestions: string[];
+}
+
+export enum CommissionType {
+  PERCENTAGE = 'Percentual da Receita',
+  FIXED = 'Valor Fixo por Indicação',
+}
+
+export interface ContractDetails {
+  type: string;
+  startDate: string;
+  endDate?: string;
+  commissionType: CommissionType;
+  commissionValue: number;
+  documentUrl?: string;
+}
+
+export interface CommissionStatement {
+  month: string; // ex: "2023-10"
+  totalRevenue: number;
+  commissionCalculated: number;
+  clientsBreakdown: Array<{
+    clientId: string;
+    clientName: string;
+    revenueGenerated: number;
+    commission: number;
+  }>;
+}
+
+export interface ContactPerson {
+  name: string;
+  role: string;
   email: string;
   phone: string;
-  address: string;
-  riskProfile: RiskProfile;
-  creditScore: number;
+}
+
+export interface CommercialPartner {
+  id: string;
+  name: string;
+  website?: string;
+  address: Address;
+  phone: string;
+  socialMedia?: SocialMedia[];
+  responsiblePersons: ContactPerson[];
+  contract: ContractDetails;
+  indicatedClientsCount: number;
+  totalVolume: number;
+  commissionHistory?: CommissionStatement[];
+}
+
+export enum ReminderType {
+  ANIVERSARIO = 'Aniversário',
+  REUNIAO = 'Reunião',
+  FOLLOW_UP = 'Follow-up',
+  DOCUMENTO = 'Documento',
+}
+
+export enum Recurrence {
+  NENHUMA = 'Nenhuma',
+  MENSAL = 'Mensal',
+  BIMESTRAL = 'Bimestral',
+  TRIMESTRAL = 'Trimestral',
+  SEMESTRAL = 'Semestral',
+  ANUAL = 'Anual',
+}
+
+export interface Reminder {
+  id: string;
+  clientId: string;
+  type: ReminderType;
+  title: string;
+  date: string;
+  recurrence: Recurrence;
+  notes?: string;
+}
+
+interface BaseClient {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: Address;
+  socialMedia?: SocialMedia[];
+  notes?: string;
+  partnerId?: string; // Substitui a estrutura 'referral'
+  financialProfile: FinancialProfile;
+  interactionHistory?: Interaction[];
   complianceStatus: ComplianceStatus;
-  advisor: string;
+  advisors: string[]; // Alterado para suportar múltiplos assessores
   attachments?: any[];
   lastActivity: string;
   walletValue: number;
+  reminders?: Reminder[];
 }
+
+export interface ClientPF extends BaseClient {
+  type: 'PF';
+  cpf: string;
+  spouse?: {
+    name: string;
+    marriageRegime: string;
+  };
+  citizenship: string;
+  familyMembers?: FamilyMember[];
+  hobbies?: string[];
+}
+
+interface Partner {
+  name: string;
+  role: string;
+  email?: string;
+}
+
+export interface ClientPJ extends BaseClient {
+  type: 'PJ';
+  cnpj: string;
+  sector: string;
+  partners: Partner[];
+  contactPersons: ContactPerson[];
+  servicePreferences: string[];
+}
+
+export type Client = ClientPF | ClientPJ;
 
 export interface Opportunity {
   id: string;
@@ -82,21 +246,34 @@ export interface Transaction {
   clientId: string;
   clientName: string;
   type: TransactionType;
-  value: number;
+  product: {
+    type: ProductType;
+    description: string;
+  };
+  value: number; // Valor total da transação
+  unitValue?: number; // Valor unitário do ativo
+  quantity?: number; // Quantidade de cotas/ações
+  reservationDate?: string;
+  liquidationDate?: string;
   timestamp: string;
   status: TransactionStatus;
   institution: string;
   docRef?: string;
 }
 
-export interface Task {
+export interface Activity {
   id: string;
-  refId: string; // Client or Opportunity ID
-  responsible: string;
-  description: string;
-  priority: TaskPriority;
-  status: TaskStatus;
+  title: string;
+  type: ActivityType;
+  clientId?: string;
+  opportunityId?: string;
+  assessor: string;
+  guests?: string[]; // Emails dos convidados
+  location?: string; // URL da reunião online ou endereço físico
   dueDate: string;
+  priority: ActivityPriority;
+  status: ActivityStatus;
+  notes?: string;
 }
 
 export interface ComplianceDoc {
@@ -132,12 +309,15 @@ export interface AuditLog {
   details: string;
 }
 
-export type NavigationItem = 'Home' | 'Clientes' | 'Oportunidades' | 'Transações' | 'Tarefas' | 'Relatórios' | 'Compliance' | 'Configurações' | 'Notificações';
+export type NavigationItem = 'Home' | 'Clientes' | 'Oportunidades' | 'Parceiros' | 'Transações' | 'Tarefas' | 'Relatórios' | 'Compliance' | 'Configurações' | 'Notificações';
 
 export const ALL_OPPORTUNITY_STAGES: OpportunityStage[] = [
-  OpportunityStage.PROSPECT,
-  OpportunityStage.QUALIFICACAO,
-  OpportunityStage.NEGOCIACAO,
-  OpportunityStage.FECHADO,
-  OpportunityStage.PERDIDO,
+  OpportunityStage.PESQUISA,
+  OpportunityStage.PRIMEIRA_REUNIAO,
+  OpportunityStage.APRESENTACAO_PORTFOLIO,
+  OpportunityStage.ONBOARDING,
+  OpportunityStage.ALOCACAO,
+  OpportunityStage.FOLLOW_UP,
+  OpportunityStage.GANHO,
+  OpportunityStage.PERDA,
 ];

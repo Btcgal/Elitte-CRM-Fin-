@@ -7,12 +7,14 @@ import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import Opportunities from './pages/Opportunities';
 import Transactions from './pages/Transactions';
-import Tasks from './pages/Tasks';
+import Activities from './pages/Activities';
 import Reports from './pages/Reports';
 import Compliance from './pages/Compliance';
 import Settings from './pages/Settings';
 import Notifications from './pages/Notifications';
+import Partners from './pages/Partners';
 import Snackbar from './components/Snackbar';
+import { Activity } from './types';
 
 const useMediaQuery = (query: string) => {
   const [matches, setMatches] = useState(false);
@@ -32,6 +34,7 @@ const useMediaQuery = (query: string) => {
 
 const App: React.FC = () => {
   const [snackbar, setSnackbar] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [activities, setActivities] = useState<Activity[]>([]);
   const location = useLocation();
 
   const isDesktop = useMediaQuery('(min-width: 768px)');
@@ -39,6 +42,11 @@ const App: React.FC = () => {
   const showSnackbar = (message: string, type: 'success' | 'error' = 'success') => {
     setSnackbar({ message, type });
     setTimeout(() => setSnackbar(null), 3000);
+  };
+
+  const addActivity = (newActivity: Omit<Activity, 'id'>) => {
+    const activityWithId: Activity = { ...newActivity, id: `act_${Date.now()}` };
+    setActivities(prev => [...prev, activityWithId]);
   };
 
   const getActivePageFromPath = (path: string) => {
@@ -62,12 +70,13 @@ const App: React.FC = () => {
             <Route path="/dashboard" element={<Dashboard showSnackbar={showSnackbar} />} />
             <Route path="/clients" element={<Clients showSnackbar={showSnackbar} />} />
             <Route path="/opportunities" element={<Opportunities showSnackbar={showSnackbar} />} />
-            <Route path="/transactions" element={<Transactions showSnackbar={showSnackbar} />} />
-            <Route path="/tasks" element={<Tasks showSnackbar={showSnackbar} />} />
+            <Route path="/transactions" element={<Transactions showSnackbar={showSnackbar} addActivity={addActivity} />} />
+            <Route path="/activities" element={<Activities activities={activities} addActivity={addActivity} showSnackbar={showSnackbar} />} />
             <Route path="/reports" element={<Reports showSnackbar={showSnackbar} />} />
             <Route path="/compliance" element={<Compliance showSnackbar={showSnackbar} />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/notifications" element={<Notifications />} />
+            <Route path="/partners" element={<Partners />} />
           </Routes>
         </main>
 

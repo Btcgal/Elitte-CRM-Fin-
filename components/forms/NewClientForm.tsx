@@ -1,66 +1,164 @@
 import React, { useState } from 'react';
 import { Client, RiskProfile, ComplianceStatus } from '../../types';
 import Modal from '../Modal';
+import { MOCK_PARTNERS } from '../../constants';
 
 interface NewClientFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddClient: (client: Omit<Client, 'id' | 'lastActivity'>) => void;
+  onAddClient: (client: Omit<Client, 'id' | 'lastActivity' | 'interactionHistory' | 'reminders'>) => void;
 }
 
 const NewClientForm: React.FC<NewClientFormProps> = ({ isOpen, onClose, onAddClient }) => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [document, setDocument] = useState('');
-  const [type, setType] = useState<'PF' | 'PJ'>('PF');
-  const [riskProfile, setRiskProfile] = useState<RiskProfile>(RiskProfile.MODERADO);
-  const [complianceStatus, setComplianceStatus] = useState<ComplianceStatus>(ComplianceStatus.PENDENTE);
-  const [creditScore, setCreditScore] = useState(0);
-  const [walletValue, setWalletValue] = useState(0);
-  const [address, setAddress] = useState('');
-  const [advisor, setAdvisor] = useState('');
+  const [clientType, setClientType] = useState<'PF' | 'PJ'>('PF');
+  const [activeTab, setActiveTab] = useState('info');
+
+  // Estados para dados comuns
+  const [commonData, setCommonData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    advisors: '',
+    complianceStatus: ComplianceStatus.PENDENTE,
+    walletValue: 0,
+    partnerId: '', // Novo campo para ID do parceiro
+  });
+
+  const [addressData, setAddressData] = useState({
+    street: '', number: '', complement: '', neighborhood: '', city: '', state: '', zipCode: '', country: '',
+  });
+
+  const [financialData, setFinancialData] = useState({
+    investorProfile: RiskProfile.MODERADO,
+    assetPreferences: '',
+    financialNeeds: '',
+  });
+
+  // Estados específicos para PF
+  const [pfData, setPfData] = useState({
+    cpf: '',
+    citizenship: '',
+  });
+
+  // Estados específicos para PJ
+  const [pjData, setPjData] = useState({
+    cnpj: '',
+    sector: '',
+    servicePreferences: '',
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAddClient({
-      name,
-      email,
-      phone,
-      document,
-      type,
-      riskProfile,
-      complianceStatus,
-      creditScore,
-      walletValue,
-      address,
-      advisor,
-    });
+    
+    const baseClientData = {
+      name: commonData.name,
+      email: commonData.email,
+      phone: commonData.phone,
+      address: addressData,
+      advisors: commonData.advisors.split(',').map(item => item.trim()),
+      complianceStatus: commonData.complianceStatus,
+      walletValue: commonData.walletValue,
+      partnerId: commonData.partnerId || undefined,
+      financialProfile: {
+        investorProfile: financialData.investorProfile,
+        assetPreferences: financialData.assetPreferences.split(',').map(item => item.trim()),
+        financialNeeds: financialData.financialNeeds.split(',').map(item => item.trim()),
+        meetingAgendaSuggestions: [],
+      },
+    };
+
+    let clientData: Omit<Client, 'id' | 'lastActivity' | 'interactionHistory' | 'reminders'>;
+
+    if (clientType === 'PF') {
+      clientData = {
+        ...baseClientData,
+        type: 'PF',
+        ...pfData,
+      };
+    } else {
+      clientData = {
+        ...baseClientData,
+        type: 'PJ',
+        ...pjData,
+        partners: [], // Inicializando como arrays vazios
+        contactPersons: [],
+      };
+    }
+
+    onAddClient(clientData);
     onClose();
   };
 
+  const renderTabs = () => (
+    <div className="flex border-b mb-4">
+      <button onClick={() => setActiveTab('info')} className={`tab-button ${activeTab === 'info' ? 'active' : ''}`}>Informações</button>
+      <button onClick={() => setActiveTab('address')} className={`tab-button ${activeTab === 'address' ? 'active' : ''}`}>Endereço</button>
+      <button onClick={() => setActiveTab('financial')} className={`tab-button ${activeTab === 'financial' ? 'active' : ''}`}>Financeiro</button>
+    </div>
+  );
+
+  const renderInfoTab = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <input type="text" placeholder="Nome" value={commonData.name} onChange={e => setCommonData({ ...commonData, name: e.target.value })} className="input-style" />
+      <select aria-label="Tipo de Cliente" value={clientType} onChange={e => setClientType(e.target.value as 'PF' | 'PJ')} className="input-style">
+        <option value="PF">Pessoa Física</option>
+        <option value="PJ">Pessoa Jurídica</option>
+      </select>
+      {clientType === 'PF' ? (
+        <>
+          <input type="text" placeholder="CPF" value={pfData.cpf} onChange={e => setPfData({ ...pfData, cpf: e.target.value })} className="input-style" />
+          <input type="text" placeholder="Cidadania" value={pfData.citizenship} onChange={e => setPfData({ ...pfData, citizenship: e.target.value })} className="input-style" />
+        </>
+      ) : (
+        <>
+          <input type="text" placeholder="CNPJ" value={pjData.cnpj} onChange={e => setPjData({ ...pjData, cnpj: e.target.value })} className="input-style" />
+          <input type="text" placeholder="Setor" value={pjData.sector} onChange={e => setPjData({ ...pjData, sector: e.target.value })} className="input-style" />
+        </>
+      )}
+      <input type="email" placeholder="Email" value={commonData.email} onChange={e => setCommonData({ ...commonData, email: e.target.value })} className="input-style" />
+      <input type="tel" placeholder="Telefone" value={commonData.phone} onChange={e => setCommonData({ ...commonData, phone: e.target.value })} className="input-style" />
+      <select aria-label="Parceiro Indicador" value={commonData.partnerId} onChange={e => setCommonData({ ...commonData, partnerId: e.target.value })} className="input-style">
+        <option value="">Nenhuma Indicação</option>
+        {MOCK_PARTNERS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+      </select>
+      <input type="text" placeholder="Assessores (separado por vírgula)" value={commonData.advisors} onChange={e => setCommonData({ ...commonData, advisors: e.target.value })} className="input-style md:col-span-2" />
+    </div>
+  );
+  
+  // renderAddressTab e renderFinancialTab permanecem similares, mas usando os novos estados
+  const renderAddressTab = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <input type="text" placeholder="Rua" value={addressData.street} onChange={e => setAddressData({ ...addressData, street: e.target.value })} className="input-style" />
+      <input type="text" placeholder="Número" value={addressData.number} onChange={e => setAddressData({ ...addressData, number: e.target.value })} className="input-style" />
+      <input type="text" placeholder="Bairro" value={addressData.neighborhood} onChange={e => setAddressData({ ...addressData, neighborhood: e.target.value })} className="input-style" />
+      <input type="text" placeholder="Cidade" value={addressData.city} onChange={e => setAddressData({ ...addressData, city: e.target.value })} className="input-style" />
+    </div>
+  );
+
+  const renderFinancialTab = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <select aria-label="Perfil de Risco" value={financialData.investorProfile} onChange={e => setFinancialData({ ...financialData, investorProfile: e.target.value as RiskProfile })} className="input-style">
+        {Object.values(RiskProfile).map(rp => <option key={rp} value={rp}>{rp}</option>)}
+      </select>
+      <input type="number" placeholder="Valor em Carteira" value={commonData.walletValue} onChange={e => setCommonData({ ...commonData, walletValue: Number(e.target.value) })} className="input-style" />
+      <input type="text" placeholder="Preferências de Ativos (separado por vírgula)" value={financialData.assetPreferences} onChange={e => setFinancialData({ ...financialData, assetPreferences: e.target.value })} className="input-style md:col-span-2" />
+      {clientType === 'PJ' && <input type="text" placeholder="Preferências de Serviços (PJ)" value={pjData.servicePreferences} onChange={e => setPjData({ ...pjData, servicePreferences: e.target.value })} className="input-style md:col-span-2" />}
+    </div>
+  );
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Novo Cliente">
+      <style>{`
+        .input-style { width: 100%; border-radius: 0.375rem; border: 1px solid #D1D5DB; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); padding: 0.5rem 0.75rem; }
+        .tab-button { padding: 0.5rem 1rem; }
+        .tab-button.active { border-bottom: 2px solid #1E2A38; font-weight: 600; }
+      `}</style>
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" placeholder="Nome" value={name} onChange={e => setName(e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-[#1E2A38] focus:ring-[#1E2A38] sm:text-sm" />
-          <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-[#1E2A38] focus:ring-[#1E2A38] sm:text-sm" />
-          <input type="tel" placeholder="Telefone" value={phone} onChange={e => setPhone(e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-[#1E2A38] focus:ring-[#1E2A38] sm:text-sm" />
-          <input type="text" placeholder="Documento" value={document} onChange={e => setDocument(e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-[#1E2A38] focus:ring-[#1E2A38] sm:text-sm" />
-          <select value={type} onChange={e => setType(e.target.value as 'PF' | 'PJ')} className="w-full rounded-md border-gray-300 shadow-sm focus:border-[#1E2A38] focus:ring-[#1E2A38] sm:text-sm">
-            <option value="PF">Pessoa Física</option>
-            <option value="PJ">Pessoa Jurídica</option>
-          </select>
-          <select value={riskProfile} onChange={e => setRiskProfile(e.target.value as RiskProfile)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-[#1E2A38] focus:ring-[#1E2A38] sm:text-sm">
-            {Object.values(RiskProfile).map(rp => <option key={rp} value={rp}>{rp}</option>)}
-          </select>
-          <select value={complianceStatus} onChange={e => setComplianceStatus(e.target.value as ComplianceStatus)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-[#1E2A38] focus:ring-[#1E2A38] sm:text-sm">
-            {Object.values(ComplianceStatus).map(cs => <option key={cs} value={cs}>{cs}</option>)}
-          </select>
-          <input type="number" placeholder="Credit Score" value={creditScore} onChange={e => setCreditScore(Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-[#1E2A38] focus:ring-[#1E2A38] sm:text-sm" />
-          <input type="number" placeholder="Valor em Carteira" value={walletValue} onChange={e => setWalletValue(Number(e.target.value))} className="w-full rounded-md border-gray-300 shadow-sm focus:border-[#1E2A38] focus:ring-[#1E2A38] sm:text-sm" />
-          <input type="text" placeholder="Endereço" value={address} onChange={e => setAddress(e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-[#1E2A38] focus:ring-[#1E2A38] sm:text-sm" />
-          <input type="text" placeholder="Assessor" value={advisor} onChange={e => setAdvisor(e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-[#1E2A38] focus:ring-[#1E2A38] sm:text-sm" />
+        {renderTabs()}
+        <div className="p-1">
+          {activeTab === 'info' && renderInfoTab()}
+          {activeTab === 'address' && renderAddressTab()}
+          {activeTab === 'financial' && renderFinancialTab()}
         </div>
         <div className="mt-6 flex justify-end gap-3">
           <button type="button" onClick={onClose} className="py-2 px-4 bg-gray-200 text-gray-800 rounded-md font-semibold hover:bg-gray-300">Cancelar</button>
