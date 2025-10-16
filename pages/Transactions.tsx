@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Transaction, TransactionStatus, TransactionType, Activity, ActivityType, ActivityPriority, ActivityStatus } from '../types';
 import { MOCK_TRANSACTIONS, TRANSACTION_STATUS_COLORS } from '../constants';
+import { useAppContext } from '../contexts/AppContext';
 import Card from '../components/Card';
 import Chip from '../components/Chip';
 import NewTransactionForm from '../components/forms/NewTransactionForm';
@@ -16,10 +17,8 @@ const TransactionIcon: React.FC<{ type: TransactionType }> = ({ type }) => {
   return <span className={`material-symbols-outlined ${iconMap[type].color}`}>{iconMap[type].icon}</span>;
 };
 
-const Transactions: React.FC<{ 
-  showSnackbar: (msg: string, type?:'success'|'error')=>void;
-  addActivity: (activity: Omit<Activity, 'id'>) => void;
-}> = ({showSnackbar, addActivity}) => {
+const Transactions: React.FC = () => {
+    const { showSnackbar, addActivity } = useAppContext();
     const [transactions, setTransactions] = useState<Transaction[]>(() => loadFromLocalStorage('transactions', MOCK_TRANSACTIONS));
     const [isNewTransactionModalOpen, setIsNewTransactionModalOpen] = useState(false);
 

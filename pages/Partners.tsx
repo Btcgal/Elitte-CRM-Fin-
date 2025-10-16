@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAppContext } from '../contexts/AppContext';
 import { MOCK_PARTNERS } from '../constants';
 import Card from '../components/Card';
 import NewPartnerForm from '../components/forms/NewPartnerForm';
@@ -6,6 +7,7 @@ import PartnerDetail from '../components/PartnerDetail';
 import { CommercialPartner } from '../types';
 
 const Partners: React.FC = () => {
+  const { showSnackbar } = useAppContext();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<CommercialPartner | null>(null);
 

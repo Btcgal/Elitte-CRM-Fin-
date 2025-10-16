@@ -2,12 +2,10 @@ import React, { useState } from 'react';
 import { Activity } from '../types';
 import Card from '../components/Card';
 import NewActivityForm from '../components/forms/NewActivityForm';
+import { useAppContext } from '../contexts/AppContext';
 
-const Activities: React.FC<{ 
-  activities: Activity[];
-  addActivity: (activity: Omit<Activity, 'id'>) => void;
-  showSnackbar: (msg: string, type?:'success'|'error')=>void 
-}> = ({ activities, addActivity, showSnackbar }) => {
+const Activities: React.FC = () => {
+    const { activities, addActivity, showSnackbar } = useAppContext();
     const [isNewActivityModalOpen, setIsNewActivityModalOpen] = useState(false);
 
     const handleAddActivity = (activity: Omit<Activity, 'id'>) => {

@@ -19,6 +19,11 @@ const Settings: React.FC = () => {
     }
   };
 
+  const handleConnectGoogle = () => {
+    // Redireciona o usuário para a rota de autenticação do backend
+    window.location.href = 'http://localhost:3000/auth/google';
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-800">Configurações</h1>
@@ -46,6 +51,24 @@ const Settings: React.FC = () => {
           {renderContent()}
         </div>
       </div>
+
+      <Card>
+        <div className="p-6">
+          <h2 className="text-lg font-semibold mb-4">Integrações</h2>
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div>
+              <h3 className="font-bold">Google Agenda & Gmail</h3>
+              <p className="text-sm text-gray-600">Sincronize suas reuniões e e-mails automaticamente.</p>
+            </div>
+            <button
+              onClick={handleConnectGoogle}
+              className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600"
+            >
+              Conectar com Google
+            </button>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 };

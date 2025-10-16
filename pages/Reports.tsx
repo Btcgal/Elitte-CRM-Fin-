@@ -3,8 +3,10 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { MOCK_REPORTS, MOCK_CLIENTS, MOCK_TRANSACTIONS, MOCK_ACTIVITIES } from '../constants';
 import Card from '../components/Card';
 import { Client, RiskProfile, ProductType, ActivityType } from '../types';
+import { useAppContext } from '../contexts/AppContext';
 
-const Reports: React.FC<{ showSnackbar: (msg: string, type?:'success'|'error')=>void }> = ({ showSnackbar }) => {
+const Reports: React.FC = () => {
+  const { showSnackbar } = useAppContext();
   const [riskProfileFilter, setRiskProfileFilter] = useState<RiskProfile | 'todos'>('todos');
   const [assetFilter, setAssetFilter] = useState('');
   const [productTypeFilter, setProductTypeFilter] = useState<ProductType | 'todos'>('todos');

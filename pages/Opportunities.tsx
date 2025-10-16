@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Opportunity, OpportunityStage, ALL_OPPORTUNITY_STAGES } from '../types';
+import { Opportunity, OpportunityStage, ALL_OPPORTUNITY_STAGES, Activity, ActivityType, ActivityPriority, ActivityStatus } from '../types';
 import { MOCK_OPPORTUNITIES, PROBABILITY_COLORS } from '../constants';
+import { useAppContext } from '../contexts/AppContext';
 import Modal from '../components/Modal';
 import NewOpportunityForm from '../components/forms/NewOpportunityForm';
 import { loadFromLocalStorage, saveToLocalStorage } from '../utils/localStorage';
@@ -75,7 +76,8 @@ const KanbanColumn: React.FC<{
     );
 };
 
-const Opportunities: React.FC<{ showSnackbar: (msg: string, type?:'success'|'error')=>void }> = ({showSnackbar}) => {
+const Opportunities: React.FC = () => {
+  const { showSnackbar, addActivity } = useAppContext();
   const [opportunities, setOpportunities] = useState<Opportunity[]>(() => loadFromLocalStorage('opportunities', MOCK_OPPORTUNITIES));
   const [draggedOpp, setDraggedOpp] = useState<Opportunity | null>(null);
   const [dragOverStage, setDragOverStage] = useState<OpportunityStage | null>(null);
@@ -96,6 +98,11 @@ const Opportunities: React.FC<{ showSnackbar: (msg: string, type?:'success'|'err
     e.preventDefault();
     if (!draggedOpp || draggedOpp.stage === newStage) return;
 
+    // Workflow de Automação
+    if (newStage === OpportunityStage.ONBOARDING) {
+      triggerOnboardingWorkflow(draggedOpp);
+    }
+
     if (newStage === OpportunityStage.GANHO || newStage === OpportunityStage.PERDA) {
         setMoveDetails({ opp: draggedOpp, newStage });
         setIsModalOpen(true);
@@ -108,6 +115,43 @@ const Opportunities: React.FC<{ showSnackbar: (msg: string, type?:'success'|'err
     setDragOverStage(null);
   };
   
+  const triggerOnboardingWorkflow = (opp: Opportunity) => {
+    const today = new Date();
+    const activitiesToCreate: Omit<Activity, 'id'>[] = [
+      {
+        title: `Coletar Documentos KYC - ${opp.clientName}`,
+        type: ActivityType.OPERACIONAL,
+        clientId: opp.clientId,
+        assessor: opp.responsible,
+        dueDate: new Date(today.setDate(today.getDate() + 2)).toISOString(),
+        priority: ActivityPriority.ALTA,
+        status: ActivityStatus.A_FAZER,
+        notes: `Início do processo de onboarding para a oportunidade: ${opp.title}`,
+      },
+      {
+        title: `Agendar Reunião de Boas-Vindas - ${opp.clientName}`,
+        type: ActivityType.REUNIAO,
+        clientId: opp.clientId,
+        assessor: opp.responsible,
+        dueDate: new Date(today.setDate(today.getDate() + 5)).toISOString(),
+        priority: ActivityPriority.MEDIA,
+        status: ActivityStatus.A_FAZER,
+      },
+      {
+        title: `Preparar plano de alocação inicial - ${opp.clientName}`,
+        type: ActivityType.OPERACIONAL,
+        clientId: opp.clientId,
+        assessor: opp.responsible,
+        dueDate: new Date(today.setDate(today.getDate() + 7)).toISOString(),
+        priority: ActivityPriority.ALTA,
+        status: ActivityStatus.A_FAZER,
+      }
+    ];
+
+    activitiesToCreate.forEach(addActivity);
+    showSnackbar(`Workflow de Onboarding ativado! 3 atividades foram criadas para ${opp.clientName}.`, 'success');
+  };
+
   const updateOpportunityStage = (oppId: string, newStage: OpportunityStage) => {
     setOpportunities(prev =>
       prev.map(o => (o.id === oppId ? { ...o, stage: newStage } : o))

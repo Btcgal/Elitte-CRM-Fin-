@@ -3,9 +3,10 @@ import { Client, ComplianceStatus, RiskProfile } from '../types';
 import { MOCK_CLIENTS, RISK_COLORS, COMPLIANCE_COLORS } from '../constants';
 import Card from '../components/Card';
 import Chip from '../components/Chip';
+import { ClientDetail } from '../components/ClientDetail';
 import NewClientForm from '../components/forms/NewClientForm';
-import ClientDetail from '../components/ClientDetail';
 import { loadFromLocalStorage, saveToLocalStorage } from '../utils/localStorage';
+import { useAppContext } from '../contexts/AppContext';
 
 const ClientCard: React.FC<{ client: Client, onClick: () => void }> = ({ client, onClick }) => (
   <Card onClick={onClick} className="hover:border-[#1E2A38] border-transparent border-2">
@@ -33,7 +34,8 @@ const ClientCard: React.FC<{ client: Client, onClick: () => void }> = ({ client,
   </Card>
 );
 
-const Clients: React.FC<{showSnackbar: (msg: string, type?:'success'|'error')=>void}> = ({showSnackbar}) => {
+const Clients: React.FC = () => {
+  const { showSnackbar, addNotification } = useAppContext();
   const [clients, setClients] = useState<Client[]>(() => loadFromLocalStorage('clients', MOCK_CLIENTS));
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
@@ -52,10 +54,10 @@ const Clients: React.FC<{showSnackbar: (msg: string, type?:'success'|'error')=>v
     setFilters(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddClient = (client: Omit<Client, 'id' | 'lastActivity'>) => {
+  const handleAddClient = (clientData: Omit<Client, 'id' | 'lastActivity'>) => {
     const newClient: Client = {
-      ...client,
-      id: new Date().toISOString(),
+      ...clientData,
+      id: `client_${Date.now()}`,
       lastActivity: new Date().toISOString(),
     };
     setClients(prev => [newClient, ...prev]);
@@ -64,12 +66,12 @@ const Clients: React.FC<{showSnackbar: (msg: string, type?:'success'|'error')=>v
 
   const filteredClients = useMemo(() => {
     return clients.filter(client => {
-      const riskMatch = filters.risk === 'all' || client.riskProfile === filters.risk;
-      const complianceMatch = filters.compliance === 'all' || client.complianceStatus === filters.compliance;
       const typeMatch = filters.type === 'all' || client.type === filters.type;
-      return riskMatch && complianceMatch && typeMatch;
+      const riskMatch = filters.risk === 'all' || client.financialProfile.investorProfile === filters.risk;
+      const complianceMatch = filters.compliance === 'all' || client.complianceStatus === filters.compliance;
+      return typeMatch && riskMatch && complianceMatch;
     });
-  }, [filters, clients]);
+  }, [clients, filters]);
 
   return (
     <div className="space-y-6">
@@ -126,7 +128,15 @@ const Clients: React.FC<{showSnackbar: (msg: string, type?:'success'|'error')=>v
         </div>
       )}
       
-      {selectedClient && <ClientDetail client={selectedClient} onClose={() => setSelectedClient(null)} showSnackbar={showSnackbar} />}
+      {selectedClient && (
+        <ClientDetail 
+          client={selectedClient} 
+          onClose={() => setSelectedClient(null)} 
+          showSnackbar={showSnackbar}
+          addNotification={addNotification}
+        />
+      )}
+
       <NewClientForm isOpen={isNewClientModalOpen} onClose={() => setIsNewClientModalOpen(false)} onAddClient={handleAddClient} />
     </div>
   );

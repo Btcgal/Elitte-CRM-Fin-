@@ -40,4 +40,29 @@ const searchWithGemini = async (query, context) => {
     }
 };
 
-module.exports = { searchWithGemini };
+const summarizeHistory = async (interactions) => {
+    const model = genAI.getGenerativeModel({ model: "gemini-pro"});
+
+    const prompt = `
+        Você é um assistente de CRM financeiro. Sua tarefa é resumir um histórico de interações com um cliente.
+        O histórico é fornecido como um array de objetos JSON.
+        Retorne um resumo conciso em bullet points (formato markdown) destacando os pontos mais importantes, as últimas decisões e os próximos passos acordados.
+
+        Histórico de Interações:
+        ${JSON.stringify(interactions, null, 2)}
+
+        Resumo:
+    `;
+
+    try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = await response.text();
+        return { summary: text };
+    } catch (error) {
+        console.error("Error summarizing with Gemini", error);
+        return { summary: "Não foi possível gerar o resumo." };
+    }
+};
+
+module.exports = { searchWithGemini, summarizeHistory };

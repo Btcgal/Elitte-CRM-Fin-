@@ -295,10 +295,12 @@ export interface Report {
 
 export interface Notification {
   id: string;
-  type: 'new_opportunity' | 'task_assigned' | 'compliance_alert';
+  type: 'new_opportunity' | 'task_assigned' | 'compliance_alert' | 'mention';
   message: string;
   date: string;
   read: boolean;
+  author?: string; // Quem originou a notificação (ex: em uma menção)
+  link?: string; // Link para a página relevante (ex: a página do cliente onde a menção ocorreu)
 }
 
 export interface AuditLog {
