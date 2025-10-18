@@ -2,10 +2,7 @@ const { defineConfig } = require("cypress");
 
 module.exports = defineConfig({
   e2e: {
-    // A baseUrl aponta para o servidor do frontend.
-    baseUrl: 'http://localhost:5173',
-
-    // A vírgula acima é essencial para a sintaxe correta do objeto.
+    baseUrl: 'http://localhost:5173', // Garante que o Cypress procure o frontend na porta 5173
     setupNodeEvents(on, config) {
       // implement node event listeners here
     },
