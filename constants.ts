@@ -3,6 +3,7 @@ import { Client, Opportunity, Transaction, Report, ComplianceStatus, RiskProfile
 const mockAddress: Address = {
   street: 'Av. Principal',
   number: '123',
+  neighborhood: 'Centro',
   city: 'São Paulo',
   state: 'SP',
   zipCode: '01000-000',

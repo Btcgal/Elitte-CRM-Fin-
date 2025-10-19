@@ -8,23 +8,23 @@ import NewClientForm from '../components/forms/NewClientForm';
 import { loadFromLocalStorage, saveToLocalStorage } from '../utils/localStorage';
 import { useAppContext } from '../contexts/AppContext';
 
-const ClientCard: React.FC<{ client: Client, onClick: () => void }> = ({ client, onClick }) => (
+  const ClientCard: React.FC<{ client: Client, onClick: () => void }> = ({ client, onClick }) => (
   <Card onClick={onClick} className="hover:border-[#1E2A38] border-transparent border-2">
     <div className="flex justify-between items-start">
       <div>
         <p className="font-bold text-lg text-[#1E2A38]">{client.name}</p>
-        <p className="text-sm text-gray-500">{client.type === 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica'} - {client.document}</p>
+  <p className="text-sm text-gray-500">{client.type === 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica'}</p>
       </div>
       <Chip label={client.complianceStatus} colorClasses={COMPLIANCE_COLORS[client.complianceStatus]} />
     </div>
     <div className="mt-4 flex justify-between items-end">
       <div>
-        <p className="text-xs text-gray-500">Perfil de Risco</p>
-        <Chip label={client.riskProfile} colorClasses={RISK_COLORS[client.riskProfile]} />
+  <p className="text-xs text-gray-500">Perfil de Risco</p>
+  <Chip label={client.financialProfile.investorProfile} colorClasses={RISK_COLORS[client.financialProfile.investorProfile]} />
       </div>
       <div className="text-right">
         <p className="text-xs text-gray-500">Score</p>
-        <p className="font-semibold text-gray-800">{client.creditScore}</p>
+  <p className="font-semibold text-gray-800">{(client as any).creditScore ?? '-'}</p>
       </div>
        <div className="text-right">
         <p className="text-xs text-gray-500">Valor em Carteira</p>
@@ -55,11 +55,11 @@ const Clients: React.FC = () => {
   };
 
   const handleAddClient = (clientData: Omit<Client, 'id' | 'lastActivity'>) => {
-    const newClient: Client = {
+    const newClient = {
       ...clientData,
       id: `client_${Date.now()}`,
       lastActivity: new Date().toISOString(),
-    };
+    } as Client;
     setClients(prev => [newClient, ...prev]);
     showSnackbar('Cliente adicionado com sucesso!');
   };
@@ -103,9 +103,9 @@ const Clients: React.FC = () => {
             </select>
           </div>
 
-          <div className="col-span-1">
+            <div className="col-span-1">
             <label htmlFor="type-filter" className="sr-only">Tipo de Cliente</label>
-            <select id="type-filter" name="type" value={filters.type} onChange={handleFilterChange} className="w-full rounded-md border-ray-300 shadow-sm focus:border-[#1E2A38] focus:ring-[#1E2A38] sm:text-sm">
+            <select id="type-filter" name="type" value={filters.type} onChange={handleFilterChange} className="w-full rounded-md border-gray-300 shadow-sm focus:border-[#1E2A38] focus:ring-[#1E2A38] sm:text-sm">
               <option value="all">Todo Tipo de Cliente</option>
               <option value="PF">Pessoa Física</option>
               <option value="PJ">Pessoa Jurídica</option>

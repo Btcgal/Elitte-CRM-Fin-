@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import SideNav from './components/navigation/SideNav';
 import TopBar from './components/navigation/TopBar';
 import Dashboard from './pages/Dashboard';
@@ -32,29 +32,27 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const renderContent = () => {
-    switch (activeNavItem) {
-      case 'Dashboard': return <Dashboard />;
-      case 'Clientes': return <Clients />;
-      case 'Oportunidades': return <Opportunities />;
-      case 'Parceiros': return <Partners />;
-      case 'Transações': return <Transactions />;
-      case 'Tarefas': return <Activities />;
-      case 'Relatórios': return <Reports />;
-      case 'Compliance': return <Compliance />;
-      case 'Notificações': return <Notifications />;
-      case 'Configurações': return <Settings />;
-      default: return <Dashboard />;
-    }
-  };
+  // routing is handled by react-router; Route components will render the correct page
 
   return (
     <div className="flex h-screen bg-gray-100">
-  <SideNav activePage={activeNavItem as any} />
+      <SideNav />
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopBar notifications={notifications} />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
-          {renderContent()}
+          <Routes>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/clients" element={<Clients />} />
+            <Route path="/opportunities" element={<Opportunities />} />
+            <Route path="/partners" element={<Partners />} />
+            <Route path="/transactions" element={<Transactions />} />
+            <Route path="/tasks" element={<Activities />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/compliance" element={<Compliance />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
         </main>
       </div>
       <CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} />

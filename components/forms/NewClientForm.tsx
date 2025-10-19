@@ -74,7 +74,7 @@ const NewClientForm: React.FC<NewClientFormProps> = ({ isOpen, onClose, onAddCli
         ...baseClientData,
         type: 'PF',
         ...pfData,
-      };
+      } as Omit<Client, 'id' | 'lastActivity' | 'interactionHistory' | 'reminders'>;
     } else {
       clientData = {
         ...baseClientData,
@@ -82,7 +82,7 @@ const NewClientForm: React.FC<NewClientFormProps> = ({ isOpen, onClose, onAddCli
         ...pjData,
         partners: [], // Inicializando como arrays vazios
         contactPersons: [],
-      };
+      } as Omit<Client, 'id' | 'lastActivity' | 'interactionHistory' | 'reminders'>;
     }
 
     onAddClient(clientData);

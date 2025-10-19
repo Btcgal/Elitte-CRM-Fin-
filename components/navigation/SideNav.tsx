@@ -1,32 +1,26 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { NavigationItem } from '../../types';
 
-interface SideNavProps {
-  activePage: NavigationItem;
-}
+interface SideNavProps {}
 
-const NavLink: React.FC<{ 
-  icon: string;
-  label: NavigationItem;
-  isActive: boolean;
-  to: string;
-}> = ({ icon, label, isActive, to }) => (
-  <Link to={to}>
-    <li
-      className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors duration-200 ${
-        isActive
-          ? 'bg-[#1E2A38] text-white'
-          : 'text-gray-600 hover:bg-gray-200 hover:text-gray-800'
-      }`}
+const NavItem: React.FC<{ icon: string; label: NavigationItem; to: string }> = ({ icon, label, to }) => (
+  <li>
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        `flex items-center p-3 rounded-lg cursor-pointer transition-colors duration-200 ${
+          isActive ? 'bg-[#1E2A38] text-white' : 'text-gray-600 hover:bg-gray-200 hover:text-gray-800'
+        }`
+      }
     >
       <span className="material-symbols-outlined text-xl w-6 h-6">{icon}</span>
       <span className="ml-4 font-medium">{label}</span>
-    </li>
-  </Link>
+    </NavLink>
+  </li>
 );
 
-const SideNav: React.FC<SideNavProps> = ({ activePage }) => {
+const SideNav: React.FC<SideNavProps> = () => {
   const navItems: { icon: string; label: NavigationItem, path: string }[] = [
     { icon: 'dashboard', label: 'Home', path: '/dashboard' },
     { icon: 'groups', label: 'Clientes', path: '/clients' },
@@ -47,13 +41,7 @@ const SideNav: React.FC<SideNavProps> = ({ activePage }) => {
       <nav className="flex-1 p-4">
         <ul className="space-y-2">
           {navItems.map((item) => (
-            <NavLink
-              key={item.label}
-              icon={item.icon}
-              label={item.label}
-              to={item.path}
-              isActive={activePage === item.label}
-            />
+            <NavItem key={item.label} icon={item.icon} label={item.label} to={item.path} />
           ))}
         </ul>
       </nav>
