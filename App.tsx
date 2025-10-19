@@ -16,7 +16,7 @@ import CommandPalette from './components/CommandPalette';
 import { useAppContext } from './contexts/AppContext';
 
 function App() {
-  const [activeNavItem, setActiveNavItem] = useState<string>('Dashboard');
+  const [activeNavItem, setActiveNavItem] = useState<string>('Home');
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const { notifications } = useAppContext();
 
@@ -50,7 +50,7 @@ function App() {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <SideNav activeItem={activeNavItem} setActiveItem={setActiveNavItem} />
+  <SideNav activePage={activeNavItem as any} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopBar notifications={notifications} />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
